@@ -8,3 +8,4 @@ python-dotenv
 uvicorn
 starlette
 requests
+google-generativeai

@@ -27,12 +27,20 @@ def get_creds():
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception:
+                print("Token refresh failed. Deleting token.json...")
+                if os.path.exists('token.json'):
+                    os.remove('token.json')
+                creds = None
+        
+        if not creds:
             if not os.path.exists(CREDENTIALS_FILE):
                 raise FileNotFoundError(f"Credentials file {CREDENTIALS_FILE} not found.")
             flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
             creds = flow.run_local_server(port=0)
+        
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
     return creds

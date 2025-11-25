@@ -1,7 +1,19 @@
 [project]
 name = "eag-v2-sse-mcp-s8"
 version = "0.1.0"
-description = "Add your description here"
+description = "Telegram-Gmail-Sheets Agent using MCP"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "mcp",
+    "python-telegram-bot",
+    "google-auth",
+    "google-auth-oauthlib",
+    "google-auth-httplib2",
+    "google-api-python-client",
+    "python-dotenv",
+    "uvicorn",
+    "starlette",
+    "requests",
+    "google-generativeai"
+]

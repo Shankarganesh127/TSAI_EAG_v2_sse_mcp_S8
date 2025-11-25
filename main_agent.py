@@ -10,6 +10,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import google.generativeai as genai
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+else:
+    print("Warning: GEMINI_API_KEY not found in .env")
+
 TELEGRAM_SSE_URL = "http://localhost:8000/sse"
 GOOGLE_SERVER_SCRIPT = "mcp_server_google.py"
 
@@ -63,8 +71,23 @@ async def run_agent():
                         print("Error parsing message data")
                         continue
 
-                    # 1. Process with LLM (Simulated here)
-                    llm_response = f"Processed: {user_text}"
+                    # 1. Process with LLM
+                    print(f"Sending query to Gemini: {user_text}")
+                    try:
+                        model = genai.GenerativeModel('gemini-2.0-flash')
+                        response = model.generate_content(user_text)
+                        llm_response = response.text
+                    except Exception as e:
+                        print(f"Gemini Error: {e}")
+                        llm_response = f"Error processing with Gemini: {e}"
+                        try:
+                            print("Attempting to list available models...")
+                            for m in genai.list_models():
+                                if 'generateContent' in m.supported_generation_methods:
+                                    print(m.name)
+                        except Exception as list_e:
+                            print(f"Could not list models: {list_e}")
+                    
                     print(f"LLM Response: {llm_response}")
 
                     # 2. Update Google Sheet
@@ -100,10 +123,11 @@ async def run_agent():
                     target_email = os.getenv("TARGET_GMAIL_ADDRESS")
                     if target_email:
                         print("Sending Email...")
+                        sheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}"
                         email_result = await google_session.call_tool("send_email_with_attachment", arguments={
                             "to_email": target_email,
                             "subject": f"New Agent Task from {user_name}",
-                            "body": f"User Query: {user_text}\n\nAgent Response: {llm_response}"
+                            "body": f"User Query: {user_text}\n\nAgent Response: {llm_response}\n\nView in Google Sheets: {sheet_url}"
                         })
                         print(f"Email Status: {email_result.content[0].text}")
 
