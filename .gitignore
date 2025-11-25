@@ -1,0 +1,15 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+telegramapi.txt
+token.json
+credentials.json
+SETUP_GUIDE.md
+
